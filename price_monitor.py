@@ -1,60 +1,75 @@
+import json
 import os
 import urllib.parse
 import urllib.request
 
 
 # -----------------------------
-# TEST PRODUCT DATA
+# LOAD PRODUCTS
 # -----------------------------
 
-product_name = "Test Product"
-old_price = 10000
-current_price = 9000
+with open("products.json", "r", encoding="utf-8") as file:
+    products = json.load(file)
 
 
 # -----------------------------
-# PRICE DROP CALCULATION
+# CHECK EACH PRODUCT
 # -----------------------------
 
-if current_price < old_price:
-    price_drop = old_price - current_price
-    drop_percentage = (price_drop / old_price) * 100
+for product in products:
 
-    message = f"""🔥 PRICE DROP DETECTED!
+    product_name = product["name"]
+    target_price = product["target_price"]
+
+    # Temporary test price
+    current_price = 9000
+
+    print(f"Checking: {product_name}")
+    print(f"Target price: ₹{target_price:,.0f}")
+    print(f"Current price: ₹{current_price:,.0f}")
+
+
+    # -----------------------------
+    # PRICE DROP CHECK
+    # -----------------------------
+
+    if current_price <= target_price:
+
+        message = f"""🔥 PRICE DROP DETECTED!
 
 {product_name}
 
-Old price: ₹{old_price:,.0f}
-New price: ₹{current_price:,.0f}
+Current price: ₹{current_price:,.0f}
+Target price: ₹{target_price:,.0f}
 
-You save: ₹{price_drop:,.0f}
-Drop: {drop_percentage:.1f}%
+🛒 Product:
+{product["url"]}
 """
 
-    print(message)
+        print(message)
 
-    # -----------------------------
-    # TELEGRAM NOTIFICATION
-    # -----------------------------
 
-    bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
-    chat_id = os.environ["TELEGRAM_CHAT_ID"]
+        # -----------------------------
+        # TELEGRAM
+        # -----------------------------
 
-    telegram_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
+        chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
-    data = urllib.parse.urlencode({
-        "chat_id": chat_id,
-        "text": message
-    }).encode()
+        telegram_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
 
-    request = urllib.request.Request(
-        telegram_url,
-        data=data
-    )
+        data = urllib.parse.urlencode({
+            "chat_id": chat_id,
+            "text": message
+        }).encode()
 
-    with urllib.request.urlopen(request) as response:
-        print("Telegram response:")
-        print(response.read().decode())
+        request = urllib.request.Request(
+            telegram_url,
+            data=data
+        )
 
-else:
-    print("No price drop detected.")
+        with urllib.request.urlopen(request) as response:
+            print(response.read().decode())
+
+    else:
+        print("No price drop detected.")

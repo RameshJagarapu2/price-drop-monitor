@@ -3,6 +3,9 @@ name: Test Price Drop
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "17 * * * *"
+
 jobs:
   price-check:
     runs-on: ubuntu-latest
